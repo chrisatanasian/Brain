@@ -7,8 +7,9 @@ class ScraperExample(scrapy.Spider):
     allowed_domains = ["quora.com", "answers.yahoo.com"]
     start_urls = ["https://www.answers.yahoo.com"]
 
-    SLEEP_TIME = 0.75
-    CSS_QUESTION = ".Fz-14.Fw-b.Clr-b.Wow-bw.title"
+    SLEEP_TIME      = 0.75
+    CSS_QUESTION    = ".Fz-14.Fw-b.Clr-b.Wow-bw.title"
+    CSS_BEST_ANSWER = ".desc.Fz-13.Lh-18"
 
     def __init__(self):
         self.driver = webdriver.Chrome()
@@ -22,12 +23,18 @@ class ScraperExample(scrapy.Spider):
             time.sleep(self.SLEEP_TIME)
 
     def get_questions(self):
-        return [i.get_attribute('text') for i in self.driver.find_elements_by_css_selector(self.CSS_QUESTION)]
+        return [q.get_attribute('text') for q in self.driver.find_elements_by_css_selector(self.CSS_QUESTION)]
+
+    def get_best_answers(self):
+        return [ba.text for ba in self.driver.find_elements_by_css_selector(self.CSS_BEST_ANSWER)]
 
     def parse(self, response):
         self.driver.get(response.url)
         self.scroll_down_n_times(1)
 
-        self.get_questions()
+        questions    = self.get_questions()
+        best_answers = self.get_best_answers()
+
+        assert len(questions) == len(best_answers)
 
         self.driver.close()
