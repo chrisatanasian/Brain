@@ -23,7 +23,7 @@ class ScraperExample(scrapy.Spider):
             time.sleep(self.SLEEP_TIME)
 
     def get_questions(self):
-        return [q.get_attribute('text') for q in self.driver.find_elements_by_css_selector(self.CSS_QUESTION)]
+        return [q.text for q in self.driver.find_elements_by_css_selector(self.CSS_QUESTION)]
 
     def get_best_answers(self):
         return [ba.text for ba in self.driver.find_elements_by_css_selector(self.CSS_BEST_ANSWER)]
