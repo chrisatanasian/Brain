@@ -3,19 +3,19 @@ from selenium import webdriver
 import time
 
 class ScraperExample(scrapy.Spider):
-    name = "scraper_example"
-    allowed_domains = ["quora.com", "answers.yahoo.com"]
-    start_urls = ["https://www.answers.yahoo.com"]
+    name            = 'scraper_example'
+    allowed_domains = ['quora.com', 'answers.yahoo.com']
+    start_urls      = ['https://www.answers.yahoo.com']
 
     SLEEP_TIME      = 0.75
-    CSS_QUESTION    = ".Fz-14.Fw-b.Clr-b.Wow-bw.title"
-    CSS_BEST_ANSWER = ".desc.Fz-13.Lh-18"
+    CSS_QUESTION    = '.Fz-14.Fw-b.Clr-b.Wow-bw.title'
+    CSS_BEST_ANSWER = '.desc.Fz-13.Lh-18'
 
     def __init__(self):
         self.driver = webdriver.Chrome()
 
     def scroll_down(self):
-        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
 
     def scroll_down_n_times(self, n):
         for i in range(n):

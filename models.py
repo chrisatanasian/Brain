@@ -2,16 +2,19 @@ from peewee import *
 
 db = SqliteDatabase('brain.db')
 
-class Question(Model):
-    question_content = CharField()
-    timestamp = DateField()
+class BaseModel(Model):
+    class Meta:
+        database = db
+
+class Question(BaseModel):
+    content = CharField(unique=True)
     upvotes = IntegerField()
     category = CharField()
+    timestamp = DateField()
 
-
-
-class Answer(Model):
-	answer_content = CharField()
-	timestamp = DateField()
-	upvotes = IntegerField()
-	question_tag = ForeignKeyField('Question')
+class Answer(BaseModel):
+    question = ForeignKeyField(Question, related_name='answers')
+    content = CharField(unique=True)
+    upvotes = IntegerField()
+    is_best_answer = BooleanField()
+    timestamp = DateField()
