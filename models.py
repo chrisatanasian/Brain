@@ -14,7 +14,7 @@ class Question(BaseModel):
 
 class Answer(BaseModel):
     question = ForeignKeyField(Question, related_name='answers')
-    content = CharField(unique=True)
+    content = CharField()
     upvotes = IntegerField()
     is_best_answer = BooleanField()
     timestamp = DateField()
