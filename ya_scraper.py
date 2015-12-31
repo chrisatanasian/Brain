@@ -1,6 +1,8 @@
 import scrapy
 from selenium import webdriver
 import time
+import re
+from datetime import datetime, timedelta
 
 class ScraperExample(scrapy.Spider):
     name            = 'scraper_example'
@@ -34,6 +36,16 @@ class ScraperExample(scrapy.Spider):
 
     def get_categories(self):
         return [c.text.encode('utf8').split('\xb7')[-2] if len(c.text.encode('utf8').split('\xb7')) > 1 else '' for c in self.driver.find_elements_by_css_selector(self.CSS_DATE_AND_CATEGORY)]
+
+    def convert_date_string_to_date(self, date_string):
+        n_hours_or_minutes = int(re.findall('\d+', date_string)[0])
+
+        if 'hours' in date_string:
+            return datetime.now() - timedelta(hours = n_hours_or_minutes)
+        elif 'days' in date_string:
+            return datetime.now() - timedelta(days = n_hours_or_minutes)
+
+        return datetime.now()
 
     def parse(self, response):
         self.driver.get(response.url)
