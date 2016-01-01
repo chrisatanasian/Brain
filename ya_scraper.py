@@ -1,8 +1,8 @@
 import scrapy
 from selenium import webdriver
 import time
-import re
-from datetime import datetime, timedelta
+from db_manager import DbManager
+from datetime import datetime
 
 class ScraperExample(scrapy.Spider):
     name            = 'scraper_example'
@@ -35,34 +35,42 @@ class ScraperExample(scrapy.Spider):
         return [d.text.encode('utf8').split('\xb7')[-1] for d in self.driver.find_elements_by_css_selector(self.CSS_DATE_AND_CATEGORY)]
 
     def get_categories(self):
-        return [c.text.encode('utf8').split('\xb7')[-2] if len(c.text.encode('utf8').split('\xb7')) > 1 else '' for c in self.driver.find_elements_by_css_selector(self.CSS_DATE_AND_CATEGORY)]
+        categories = []
 
-    def convert_date_string_to_date(self, date_string):
-        n_hours_or_minutes = int(re.findall('\d+', date_string)[0])
+        for c in self.driver.find_elements_by_css_selector(self.CSS_DATE_AND_CATEGORY):
+            split_category = c.text.encode('utf8').split('\xb7')
 
-        if 'hours' in date_string:
-            return datetime.now() - timedelta(hours = n_hours_or_minutes)
-        elif 'days' in date_string:
-            return datetime.now() - timedelta(days = n_hours_or_minutes)
+            if len(split_category) > 1:
+                categories.append(split_category[-2].strip()[:-2])
+            else:
+                categories.append('')
 
-        return datetime.now()
+        return categories
 
     def parse(self, response):
         self.driver.get(response.url)
         self.scroll_down_n_times(1)
 
-        questions    = self.get_questions()
+        questions = self.get_questions()
         time.sleep(self.SLEEP_TIME)
 
-        best_answers = self.get_best_answers()
+        # best_answers = self.get_best_answers()
+        # time.sleep(self.SLEEP_TIME)
+
+        dates = self.get_question_dates()
         time.sleep(self.SLEEP_TIME)
 
-        dates        = self.get_question_dates()
+        categories = self.get_categories()
         time.sleep(self.SLEEP_TIME)
 
-        categories   = self.get_categories()
-        time.sleep(self.SLEEP_TIME)
+        # assert len(questions) == len(best_answers) == len(dates) == len(categories)
 
-        assert len(questions) == len(best_answers) == len(dates) == len(categories)
+        for i in range(len(questions)):
+            date = DbManager.convert_date_string_to_datetime(dates[i])
+            question = { 'content': questions[i], 'upvotes': -1, 'category': categories[i], 'timestamp': date }
+            DbManager.add_question(question)
+
+            # answer = { 'content': best_answers[i], 'upvotes': -1, 'is_best_answer': True, 'timestamp': datetime.now()}
+            # DbManager.add_answer(answer)
 
         self.driver.close()
