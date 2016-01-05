@@ -4,10 +4,12 @@ import time
 from db_manager import DbManager
 from datetime import datetime
 
-class ScraperExample(scrapy.Spider):
+class YaScraper(scrapy.Spider):
     name            = 'scraper_example'
     allowed_domains = ['quora.com', 'answers.yahoo.com']
-    start_urls      = ['https://www.answers.yahoo.com']
+    start_urls      = ['https://answers.yahoo.com/dir/index?link=list&sid=396545452']
+
+    CATEGORY        = 'Medical'
 
     SLEEP_TIME            = 0.75
     CSS_QUESTION          = '.Fz-14.Fw-b.Clr-b.Wow-bw.title'
@@ -60,14 +62,17 @@ class ScraperExample(scrapy.Spider):
         dates = self.get_question_dates()
         time.sleep(self.SLEEP_TIME)
 
-        categories = self.get_categories()
-        time.sleep(self.SLEEP_TIME)
+        # assert len(questions) == len(best_answers) == len(dates)
 
-        # assert len(questions) == len(best_answers) == len(dates) == len(categories)
+        if not self.CATEGORY:
+            categories = self.get_categories()
+            time.sleep(self.SLEEP_TIME)
+            assert len(questions) == len(categories)
 
         for i in range(len(questions)):
-            date = DbManager.convert_date_string_to_datetime(dates[i])
-            question = { 'content': questions[i], 'upvotes': -1, 'category': categories[i], 'timestamp': date }
+            date     = DbManager.convert_date_string_to_datetime(dates[i])
+            category = self.CATEGORY if self.CATEGORY else categories[i]
+            question = { 'content': questions[i], 'upvotes': -1, 'category': category, 'timestamp': date }
             DbManager.add_question(question)
 
             # answer = { 'content': best_answers[i], 'upvotes': -1, 'is_best_answer': True, 'timestamp': datetime.now()}
